@@ -1,6 +1,8 @@
 import json
 import sys
+import time
 
+start_mark = time.perf_counter()
 if len(sys.argv) < 3:
     print("Usage: python computeSales.py catalog.json sales.json")
     sys.exit()
@@ -40,3 +42,6 @@ for sale_entry in data_b:
         sum_value += lookup_table[key_name] * qty_number
     else:
         print("Missing product:", key_name)
+end_mark = time.perf_counter()
+
+print("Execution:", end_mark - start_mark)
