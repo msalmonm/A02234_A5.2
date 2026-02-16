@@ -15,15 +15,6 @@ from pathlib import Path
 def read_json(path_value):
     """
     Load a JSON file safely.
-
-    Args:
-        path_value (Path): Path to JSON file.
-
-    Returns:
-        list | dict: Parsed JSON content.
-
-    Exits:
-        Program exits if file cannot be read.
     """
     try:
         with open(path_value, "r", encoding="utf-8") as file_obj:
@@ -37,16 +28,22 @@ def create_price_map(source_list):
     """
     Create dictionary mapping product titles to prices.
 
-    Args:
-        source_list (list): Product catalog list.
+    Only skips:
+    - Missing keys
+    - Non-numeric prices
 
-    Returns:
-        dict: Mapping {title: price}.
+    Negative prices are allowed.
     """
     container_map = {}
 
     for entry in source_list:
-        container_map[entry["title"]] = float(entry["price"])
+        try:
+            title = entry["title"]
+            price_value = float(entry["price"])
+            container_map[title] = price_value
+        except (KeyError, ValueError, TypeError):
+            print("Invalid catalog entry skipped.")
+            continue
 
     return container_map
 
@@ -55,28 +52,29 @@ def calculate_amount(price_map, sales_list):
     """
     Compute total sales amount.
 
-    Args:
-        price_map (dict): Product price mapping.
-        sales_list (list): Sales record list.
+    Only skips:
+    - Missing keys
+    - Non-numeric quantities
+    - Products not in catalog
 
-    Returns:
-        tuple: (total_amount, warnings_list)
+    Negative quantities are allowed.
     """
     accumulator = 0.0
     notes = []
 
     for record in sales_list:
-        product_id = record["Product"]
-        quantity_val = float(record["Quantity"])
-
-        if quantity_val < 0:
-            notes.append(f"Negative quantity: {product_id}")
+        try:
+            product_id = record["Product"]
+            quantity_val = float(record["Quantity"])
+        except (KeyError, ValueError, TypeError):
+            notes.append("Invalid sales record skipped.")
             continue
 
         if product_id not in price_map:
             notes.append(f"Not found: {product_id}")
             continue
 
+        # No skip negative values
         accumulator += price_map[product_id] * quantity_val
 
     return accumulator, notes
@@ -85,8 +83,6 @@ def calculate_amount(price_map, sales_list):
 def main():
     """
     Main execution function.
-
-    Handles argument parsing, computation, and output.
     """
     if len(sys.argv) != 3:
         print("Usage: python compute_sales.py catalog.json sales.json")
