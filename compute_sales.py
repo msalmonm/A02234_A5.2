@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+compute_sales.py
+
+Program to compute total sales from a product catalog and
+a sales record JSON file.
+"""
 
 import json
 import sys
@@ -7,15 +13,36 @@ from pathlib import Path
 
 
 def read_json(path_value):
+    """
+    Load a JSON file safely.
+
+    Args:
+        path_value (Path): Path to JSON file.
+
+    Returns:
+        list | dict: Parsed JSON content.
+
+    Exits:
+        Program exits if file cannot be read.
+    """
     try:
         with open(path_value, "r", encoding="utf-8") as file_obj:
             return json.load(file_obj)
-    except Exception as err:
+    except (FileNotFoundError, json.JSONDecodeError) as err:
         print(f"Error loading {path_value}: {err}")
         sys.exit(1)
 
 
 def create_price_map(source_list):
+    """
+    Create dictionary mapping product titles to prices.
+
+    Args:
+        source_list (list): Product catalog list.
+
+    Returns:
+        dict: Mapping {title: price}.
+    """
     container_map = {}
 
     for entry in source_list:
@@ -25,6 +52,16 @@ def create_price_map(source_list):
 
 
 def calculate_amount(price_map, sales_list):
+    """
+    Compute total sales amount.
+
+    Args:
+        price_map (dict): Product price mapping.
+        sales_list (list): Sales record list.
+
+    Returns:
+        tuple: (total_amount, warnings_list)
+    """
     accumulator = 0.0
     notes = []
 
@@ -46,8 +83,13 @@ def calculate_amount(price_map, sales_list):
 
 
 def main():
+    """
+    Main execution function.
+
+    Handles argument parsing, computation, and output.
+    """
     if len(sys.argv) != 3:
-        print("Usage: python computeSales.py catalog.json sales.json")
+        print("Usage: python compute_sales.py catalog.json sales.json")
         sys.exit(1)
 
     catalog_path = Path(sys.argv[1])
@@ -59,7 +101,10 @@ def main():
     sales_data = read_json(sales_path)
 
     price_map = create_price_map(catalog_data)
-    total_amount, warnings_list = calculate_amount(price_map, sales_data)
+    total_amount, warnings_list = calculate_amount(
+        price_map,
+        sales_data
+    )
 
     end_mark = time.perf_counter()
 
@@ -70,7 +115,9 @@ def main():
         final_text += "Warnings:\n"
         final_text += "\n".join(warnings_list) + "\n\n"
 
-    final_text += f"Execution time: {end_mark - start_mark:.6f} seconds\n"
+    final_text += (
+        f"Execution time: {end_mark - start_mark:.6f} seconds\n"
+    )
 
     print(final_text)
 
