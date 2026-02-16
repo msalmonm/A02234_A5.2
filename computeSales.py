@@ -20,10 +20,13 @@ sum_value = 0
 
 for sale_entry in data_b:
     key_name = sale_entry["Product"]
+    qty_number = sale_entry["Quantity"]
+
+    if qty_number < 0:
+        print("Invalid quantity:", key_name)
+        continue
 
     if key_name in lookup_table:
-        sum_value += lookup_table[key_name] * sale_entry["Quantity"]
+        sum_value += lookup_table[key_name] * qty_number
     else:
         print("Missing product:", key_name)
-
-print("Result:", sum_value)
